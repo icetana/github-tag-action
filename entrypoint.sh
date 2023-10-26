@@ -21,6 +21,8 @@ minor_string_token=${MINOR_STRING_TOKEN:-#minor}
 patch_string_token=${PATCH_STRING_TOKEN:-#patch}
 none_string_token=${NONE_STRING_TOKEN:-#none}
 branch_history=${BRANCH_HISTORY:-compare}
+allow_tag_on_unchanged=${ALLOW_TAG_ON_UNCHANGED:-false}
+
 # since https://github.blog/2022-04-12-git-security-vulnerability-announced/ runner uses?
 git config --global --add safe.directory /github/workspace
 
@@ -45,6 +47,7 @@ echo -e "\tMINOR_STRING_TOKEN: ${minor_string_token}"
 echo -e "\tPATCH_STRING_TOKEN: ${patch_string_token}"
 echo -e "\tNONE_STRING_TOKEN: ${none_string_token}"
 echo -e "\tBRANCH_HISTORY: ${branch_history}"
+echo -e "\tALLOW_TAG_ON_UNCHANGED: ${allow_tag_on_unchanged}"
 
 # verbose, show everything
 if $verbose
@@ -123,8 +126,8 @@ fi
 tag_commit=$(git rev-list -n 1 "$tag" || true )
 # get current commit hash
 commit=$(git rev-parse HEAD)
-# skip if there are no new commits for non-pre_release
-if [ "$tag_commit" == "$commit" ]
+
+if [ "$tag_commit" == "$commit" ] && [ "$allow_tag_on_unchanged" == "false" ]
 then
     echo "No new commits since previous tag. Skipping..."
     setOutput "new_tag" "$tag"
